@@ -15,7 +15,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Text controllers
   final newExpenseNameController = TextEditingController();
-  final newExpenseAmountController = TextEditingController();
+  final newExpenseRealController = TextEditingController();
+  final newExpenseCentavoController = TextEditingController();
 
   void addNewExpense() {
     showDialog(
@@ -28,11 +29,31 @@ class _HomePageState extends State<HomePage> {
             // expense name
             TextField(
               controller: newExpenseNameController,
+              decoration: const InputDecoration (hintText: "Nome"),
+
             ),
-            // expense amount
-            TextField(
-              controller: newExpenseAmountController,
-            ),
+            Row(
+              children: [
+                // Reais
+                Expanded(
+                  child: TextField(
+                    controller: newExpenseRealController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration (hintText: "Reais"),
+                  ),
+                ),
+
+                // Centavos
+                Expanded(
+                  child:TextField(
+                  controller: newExpenseCentavoController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration (hintText: "Centavos"),
+                  ),
+                ),
+                
+              ],
+            )
           ],
         ),
         //save btn
@@ -53,9 +74,12 @@ class _HomePageState extends State<HomePage> {
 
   // save
   void save() {
+    // put real and cents together
+    String amount =
+        '${newExpenseRealController.text}.${newExpenseCentavoController.text}';
     ExpenseItem newExpense = ExpenseItem(
       name: newExpenseNameController.text,
-      amount: newExpenseAmountController.text,
+      amount: amount,
       dateTime: DateTime.now(),
     );
     Provider.of<ExpenseData>(context, listen: false).addNewExpense(newExpense);
@@ -72,20 +96,22 @@ class _HomePageState extends State<HomePage> {
   // clear controllers
   void clear() {
     newExpenseNameController.clear();
-    newExpenseAmountController.clear();
+    newExpenseRealController.clear();
+    newExpenseCentavoController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ExpenseData>(
         builder: (context, value, child) => Scaffold(
-              backgroundColor: Colors.grey,
-              floatingActionButton: FloatingActionButton(
-                onPressed: addNewExpense,
-                backgroundColor: Colors.black,
-                child: const Icon(Icons.add),
-              ),
-              body: ListView(children: [
+            backgroundColor: Colors.grey,
+            floatingActionButton: FloatingActionButton(
+              onPressed: addNewExpense,
+              backgroundColor: Colors.black,
+              child: const Icon(Icons.add),
+            ),
+            body: ListView(
+              children: [
                 // weekly summary
                 ExpenseSummary(startOfWeek: value.startOfWeekDate()),
 
@@ -96,13 +122,12 @@ class _HomePageState extends State<HomePage> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: value.getAllExpenseList().length,
                   itemBuilder: (context, index) => ExpenseTile(
-                        name: value.getAllExpenseList()[index].name,
-                        amount: value.getAllExpenseList()[index].amount,
-                        dateTime: value.getAllExpenseList()[index].dateTime,
+                    name: value.getAllExpenseList()[index].name,
+                    amount: value.getAllExpenseList()[index].amount,
+                    dateTime: value.getAllExpenseList()[index].dateTime,
                   ),
-              ),
-
-              ],)
-            ));
+                ),
+              ],
+            )));
   }
 }
